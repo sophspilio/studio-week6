@@ -18,11 +18,11 @@ p {
   padding-left: 10px;
 }
 a:link {
-  color: #CE7B32;
+  color: #F8BC88;
 }
 a:hover {
   color: white;
-  background-color: #F8BC88
+  background-color: #F8BC88;
 }
 #wrapper {
   width: 800px;
@@ -77,6 +77,7 @@ a:hover {
 
 .legend p {
   font-size: 12px;
+  font-family: Montserrat, sans-serif;
   line-height: 25px;
   margin: 0;
 }
