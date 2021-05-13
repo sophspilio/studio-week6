@@ -17,8 +17,8 @@ p {
   font-size: 18px;
   padding-left: 10px;
 }
-a:link {
-  color: #F8BC88;
+a:link{
+  color: orange;
 }
 a:hover {
   color: white;
