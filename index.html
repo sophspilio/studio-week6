@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mali Health Sites Map</title>
+	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+	<script src="Leaflet.MakiMarkers.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+	<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+	<!-- Adding font styling from google fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Raleway&family=Roboto&display=swap" rel="stylesheet">
+	<style>
+		body {
+			margin: 0px;
+		}
+		h1 {
+			float: left;
+			padding-left: 10px;
+			font-family: Lato, sans-serif;
+      font-size: 42px
+    }
+		h2 {
+			padding-left: 10px;
+			font-family: Lato, sans-serif;
+			font-size: 26px
+		}
+    p {
+      font-family: Montserrat, sans-serif;
+      font-size: 18px;
+			padding-left: 10px;
+    }
+		a:link {
+			color: #CE7B32;
+		}
+		a:hover {
+			color: white;
+			background-color: #F8BC88
+		}
+		#wrapper {
+			width: 800px;
+		}
+		#map {
+			width: 780px;
+			margin: 0 auto;
+			height: 500px;
+		}
+
+		#controls {
+			width: 100%;
+			margin: 0 auto;
+			padding: 15px;
+		}
+
+		#narrative {
+			width: 780px;
+			height: 500px;
+			margin: 0 auto;
+			padding: 15px;
+		}
+
+		#header {
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+		.legend {
+			line-height: 18px;
+			color: #333333;
+			font-family: Montserrat, sans-serif;
+			padding: 6px 8px;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+		}
+
+		.legend i {
+			width: 18px;
+			height: 18px;
+			float: left;
+			margin-right: 8px;
+			opacity: 0.7;
+		}
+
+		.legend img {
+			width: 18px;
+			height: 18px;
+			float: left;
+		}
+
+		.legend p {
+			font-size: 12px;
+			line-height: 25px;
+			margin: 0;
+		}
+		.button {
+		  border: none;
+		  color: white;
+		  padding: 15px 20px;
+		  text-align: center;
+		  display: inline-block;
+			font-family: Montserrat;
+		  font-size: 14px;
+		}
+		.button1 {
+			background-color: white;
+			color: black;
+			border: 2px solid #4CAF50;
+		}
+		.button1:hover {
+		background-color: #4CAF50;
+		color: white;
+		}
+		.button2 {
+		background-color: white;
+	  color: black;
+	  border: 2px solid #f44336;
+	 }
+	 .button2:hover {
+		background-color: #f44336;
+ 		color: white;
+	 }
+	 .button3 {
+		background-color: white;
+	  color: black;
+	  border: 2px solid #008CBA;
+	}
+	.button3:hover {
+		background-color: #008CBA;
+	  color: white;
+	}
+	</style>
+</head>
+<body>
+	<!-- Web map & content will go here.  -->
+	<div id="wrapper">
+		<div id="header">
+			<h1>Malnutrition & Health Sites in Mali</h1>
+		</div>
+		<div id="map"></div>
+		<div id="controls">
+			<button class = "button button1" id="addButton">Show All Health Sites</button>
+			<button class = "button button2" id="removeButton">Remove All Health Sites</button>
+			<button class = "button button3" id="toggleButton"> Toggle Health Sites </button>
+		<!--<button id="filterClinics">Clinics </button> -->
+		</div>
+
+			<div id="narrative"><h2> A note on this site</h2>
+				<p>This map shows the malnutrition levels and health sites across Mali.
+				You can search, zoom, and interact with the points to learn more about this <a href = "https://data.humdata.org">Humanitarian Data Exchange data.</a> <br>
+			To enhance this map and make it more user friendly, I added toggle buttons to turn on and off all health sites. Ideally, I would have also liked to add other toggle buttons for a user to select specific types of health sites (clinic, pharmacy, doctor, etc.). However, I was not able to code in this bit. There are so many points that this would have been a very helpful tool to filter down to one amenity at a time. This tool could be another toggle button below the map, or as a panel toggle button in the legend. I think that either option would have give the user some control over what they were viewing. Because this is such a large map with so many points, I think the best way for the user to absorb the information and get anything from this is to give them both the option to 1) zoom, search, and explore or 2) filter down the data visually so it can be consumed in smaller sections. </p></div>
+		</div>
+	</div>
+
+	<script>
+    // Create Map Object
+    var map = L.map('map',{ center: [16.68,-2.87], zoom: 5 });
+
+    // Add Tile Layer
+		L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>',
+			maxZoom: 17,
+			minZoom: 5
+		}).addTo(map);
+		// add scale bar
+	L.control.scale({position: 'bottomleft'}).addTo(map);
+	L.Control.geocoder({
+		position: "topleft",
+		placeholder: "Enter place name",
+		errorMessage: "No place found",
+		}).addTo(map);
+		// Add GeoJSON Data
+		// Null variable that will hold Healthsites data
+		var Healthsites = null;
+		// Add GeoJSON Data to the map when it loads
+		$.getJSON("data/Mali_healthsites.geojson",function(data){
+		    // set Healthsites to the dataset and add the Healthsites GeoJSON layer to the map
+		    Healthsites = L.geoJson(data,{
+				onEachFeature: function (feature, layer) {
+					layer.bindPopup("Amenity Type: " + feature.properties.amenity + "<br/>" + "Name: " + feature.properties.name); // What's missing here?
+				}, pointToLayer: function (feature, latlng) {
+        if (feature.properties.amenity == "clinic"){ // Replacing previous marker with conditionals
+          var marker = L.marker(latlng,{icon: clinicIcon});
+        } else if (feature.properties.amenity == "dentist") {
+          var marker = L.marker(latlng,{icon: dentistIcon});
+        } else if (feature.properties.amenity == "doctors") {
+          var marker = L.marker(latlng,{icon: doctorsIcon});
+        } else if (feature.properties.amenity == "hospital") {
+          var marker = L.marker(latlng,{icon: hospitalIcon});
+        } else {
+          var marker = L.marker(latlng,{icon: pharmacyIcon});
+        };
+      return marker;
+      }
+    });
+
+//ADD BUTTONS
+		// Create event listener for the Add health sites Button
+		document.getElementById("addButton").addEventListener("click", addHealthsites);
+
+		// add healtsites function
+		function addHealthsites() {
+    	Healthsites.addTo(map);
+		};
+				// remove healtsites function
+		document.getElementById("removeButton").addEventListener("click", removeHealthsites);
+		function removeHealthsites() {
+			map.removeLayer(Healthsites);
+		};
+		// event listenter for toggle health sites
+		document.getElementById("toggleButton").addEventListener("click", toggleHealthsites);
+		// Toggle healh sites
+		function toggleHealthsites(){
+	    if(map.hasLayer(Healthsites)){
+	        removeHealthsites();
+	    } else {
+	        addHealthsites();
+	    }
+	};
+		});
+		// Create Custom Icons Here
+		var healthIcon = L.Icon.extend({
+			options:{
+		  iconUrl: 'icons/health_facility.png',
+		  iconSize: [24,24],
+		  iconAnchor: [12,12],
+		  popupAnchor: [0,-6]
+		}
+		});
+		// Specific icon for each amenity type
+		var clinicIcon = new healthIcon({iconUrl: 'icons/clinic.png'});
+		var dentistIcon = new healthIcon({iconUrl: 'icons/dentist.png'});
+		var doctorsIcon = new healthIcon({iconUrl: 'icons/doctor.png'});
+		var hospitalIcon = new healthIcon({iconUrl: 'icons/health_facility.png'});
+		var pharmacyIcon = new healthIcon({iconUrl: 'icons/medicine.png'});
+		// Add Admin unit Polygons
+		// null variable holds admin units layer
+		var adminLayer= null;
+
+		//add admin polyogns
+		$.getJSON("data/Mali_Prevalence_Global_Acute_Malnutrition.geojson",function(data){
+	    adminLayer = L.geoJson(data, {style: style}).addTo(map);
+	});
+	// Set function for color ramp w/ colors from Colorbrewer
+	function setColor(Wast_Text){
+	return Wast_Text == 'High' ? '#e6550d' :
+	  Wast_Text == 'Medium' ? '#fdae6b' :
+	  Wast_Text == 'Low' ? '#fee6ce' :
+	                   '#d4cfcd';
+	};
+	// Set style function that sets fill color property equal to FI_Class
+function style(feature) {
+  return {
+    fillColor: setColor(feature.properties.Wast_Text),
+    fillOpacity: 0.5,
+    weight: 0,
+    opacity: 0,
+    color: '#ffffff',
+    dashArray: '0'
+  };
+}
+
+// Event Listener for a click on the Clinics button
+document.getElementById("filterClinics").addEventListener("click", filterClinics);
+
+// Function to update healtsites to filtered subset of data showing clinics
+
+function filterClinics(){
+    if(map.hasLayer(Healthsites)){
+    removeHealthsites();
+    };
+		Healthsites = L.geoJson(data,{
+		onEachFeature: function (feature, layer) {
+			layer.bindPopup("Amenity Type: " + feature.properties.amenity + "<br/>" + "Name: " + feature.properties.name); // What's missing here?
+		}, filter: function (feature, layer) {
+				return feature.properties.amenity == "clinic";
+		}, pointToLayer: function (feature, latlng) {
+      var marker = L.marker(latlng,{icon: healthIcon});
+      return marker;
+		},
+}).addTo(map);
+}
+
+// create control object for Legend
+var legend = L.control({
+	position: 'bottomright'
+});
+// Function that runs when legend is added to map
+legend.onAdd = function(map) {
+
+	// Create Div Element and Populate it with HTML
+	var div = L.DomUtil.create('div', 'legend');
+	div.innerHTML += '<b>Prevalence of wasting </b><br/>';
+	div.innerHTML += '<b>in children < 5 yrs. old,</b><br/>';
+	div.innerHTML += '<b>by region</b><br/>';
+	div.innerHTML += '<i style="background: #e6550d"></i><p>High</p>';
+	div.innerHTML += '<i style="background: #fdae6b"></i><p>Medium</p>';
+	div.innerHTML += '<i style="background: #fee6ce"></i><p>Low</p>';
+	div.innerHTML += '<i style="background: #d4cfcd"></i><p>Uncategorized</p>';
+	div.innerHTML += '<hr><img src="icons/clinic.png"><p>Clinic</p>';
+	div.innerHTML += '<img src="icons/dentist.png"><p>Dentist</p>';
+	div.innerHTML += '<img src="icons/doctor.png"><p>Doctor</p>';
+	div.innerHTML += '<img src="icons/health_facility.png"><p>Hospital</p>';
+	div.innerHTML += '<img src="icons/medicine.png"><p>Pharmacy</p>';
+	// Return the Legend div containing the HTML content
+	return div;
+};
+	// Add Legend to Map
+	legend.addTo(map);
+
+	</script>
+</body>
+</html>
